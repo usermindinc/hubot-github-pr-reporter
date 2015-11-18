@@ -6,10 +6,11 @@
 #   HUBOT_GITHUB_USER - used by githubot
 #
 # Dependencies:
-#    "cron-parser": "^1.0.1",    - Used to parse cron string input
-#    "moment": "^2.10.6"         - Used for report formatting
-#    "node-schedule": "^0.5.1",  - Used for the scheduling feature
-#    "underscore": "^1.8.3"      - Used for report formatting
+#    "cron-parser": "1.0.1"    - Used to parse cron string input
+#    "githubot": "1,0,0"       - Used to query GitHub
+#    "moment": "2.10.6"        - Used for report formatting
+#    "node-schedule": "0.5.1"  - Used for the scheduling feature
+#    "underscore": "1.8.3"     - Used for report formatting
 #
 # Commands:
 #   hubot show prs for [user:user] [team:team] [org:organization] - List PRs by author, filter by user, team, or organization. If nothing is specified, it will be for all orgs that hubot can access.
