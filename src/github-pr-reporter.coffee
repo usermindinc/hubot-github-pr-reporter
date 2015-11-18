@@ -375,7 +375,7 @@ module.exports = (robot) ->
   robot.brain.once "loaded", () ->
     getSubscriptions robot
 
-  robot.respond /show prs?(?: for)?(?: user:(\w*))?(?: team:([\w-]*))?(?: org:(\w*))?/i, (res) ->
+  robot.respond /show prs?(?: for)?(?: user:(\w*))?(?: team:([\w-]*))?(?: org:(\w*))?$/i, (res) ->
     [ignored, user, team, org] = res.match
     parseDigestRequest github, user, team, org, (digestRequest, error) ->
       if error?
@@ -385,14 +385,15 @@ module.exports = (robot) ->
         digestForRequest github, digestRequest, (digest) ->
           res.send digest
 
-  robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:(\w*))?(?: team:([\w-]*))?(?: org:(\w*))?(?: cron:"(.*)")/i, (res) ->
+  robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:(\w*))?(?: team:([\w-]*))?(?: org:(\w*))?(?: cron:"(.*)")?/i, (res) ->
     [ignored, user, team, org, cron] = res.match
     parseDigestRequest github, user, team, org, (digestRequest, error) ->
       unless error?
-        try
-          cronParser.parseExpression cron
-        catch cronError
-          error = cronError
+        if cron?
+          try
+            cronParser.parseExpression cron
+          catch cronError
+            error = cronError
 
       if error?
         res.send "`#{res.match[0]}` failed: #{error}"
@@ -422,7 +423,7 @@ module.exports = (robot) ->
       if shouldShowAll
         header = "Room\tID\tRequestor\tDescription"
       else
-        header = "ID\tRequested By\tDescription"
+        header = "ID\tRequestor\tDescription"
       joinedResponses = responses.join("\n")
       res.send "#{header}\n#{joinedResponses}"
     else
@@ -436,9 +437,12 @@ module.exports = (robot) ->
         digestRequest.id == id
       if matchingIndex >= 0
         matchingRequest = subscriptions[matchingIndex]
-        matchingRequest.scheduledJob.cancel()
-        subscriptions.splice(matchingIndex, 1)
-        res.send "Successfully unsubscribed from #{matchingRequest.id}: #{matchingRequest.description()}"
+        if matchingRequest.room == res.envelope.room
+          matchingRequest.scheduledJob.cancel()
+          subscriptions.splice(matchingIndex, 1)
+          res.send "Successfully unsubscribed from #{matchingRequest.id}: #{matchingRequest.description()}"
+        else
+          res.send "Subscription #{matchingRequest.id} is for room ##{matchingRequest.room}. You need to be in that room to unsubscribe to that report."
       else
         res.send "No subscription found for id `#{id}`. Try `#{robot.name} list pr subscriptions` to see subscriptions in this room"
     else
