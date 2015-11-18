@@ -149,7 +149,7 @@ digestForRequest = (github, digestRequest, callback) ->
       [issues, [digestRequest.user]]
     else if digestRequest.team?
       new Promise (resolve, reject) ->
-        github.get "teams/#{validTeam.id}/members", (users) ->
+        github.get "teams/#{digestRequest.team.id}/members", (users) ->
           resolve [issues, users]
     else
       [issues, null]
