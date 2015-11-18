@@ -81,7 +81,7 @@ class DigestRequest
     request.requestedBy = object.requestedBy
     request
 
-  description: ->
+  description: (shouldSkipFrequency) ->
     explanation = "all PRs"
     if @userName?
       explanation += " mentioning #{@userName}"
@@ -91,8 +91,9 @@ class DigestRequest
       explanation += " in the #{@organizationName} organization"
     if @scheduleFrequency?
       explanation += " with cron string \"#{@scheduleFrequency}\""
-    else
+    else unless shouldSkipFrequency
       explanation += " at the default frequency (weekdays at noon)"
+    explanation
 
   shortDescription: ->
     description = ""
@@ -168,18 +169,23 @@ digestForRequest = (github, digestRequest, callback) ->
   # Generate output grouped by login.
   promiseChain = promiseChain.then (issues) ->
     digest = ""
-    groupedIssues = _.groupBy issues, (issue) ->
+    sortedIssues = _.sortBy issues, (issue) ->
+      moment(issue.updated_at)
+    groupedIssues = _.groupBy sortedIssues, (issue) ->
       issue.user.login
     _.forEach groupedIssues, (issues, login) ->
       digest += "#{login}:\n"
       issues.forEach (issue) ->
         age = ageOfIssue issue
+        comments = "#{issue.comments} comments"
         assignee = issue.assignee and issue.assignee.login or "*unassigned*"
         title = issue.title
         link = issue.html_url
 
-        digest += "\t#{age}, #{assignee}, #{title}\n"
+        digest += "\t#{age}, #{comments}, #{assignee}, #{title}\n"
         digest += "\t↳ #{link}\n"
+    if digest == ""
+      digest = "Nothing found for #{digestRequest.description(true)}"
     callback digest
   promiseChain = promiseChain.catch (error) ->
     callback "#{digestRequest.id}: No good #{error}"
@@ -272,7 +278,8 @@ parseDigestRequest = (github, userName, teamName, organizationName, callback) ->
       if matchingTeam?
         validTeam = matchingTeam
       else
-        error or= "Team #{teamName} is not in organization #{validOrganization.login}"
+        error or= "Team #{teamName} is not in organization #{validOrganization.login}\n
+You may need to invite hubot to the #{teamName} team for it to be queryable."
     else
       organizations.forEach (organization) ->
         matchingTeam = teams[organization.login].find (team) ->
@@ -281,7 +288,9 @@ parseDigestRequest = (github, userName, teamName, organizationName, callback) ->
           validTeam = matchingTeam
           validOrganization = organization
       unless validTeam?
-        error or= "Team #{teamName} doesn't appear to be in any known organization: #{organizations.join(',')}"
+        orgNames = organizations.map (org) -> org.login
+        error or= "Team #{teamName} doesn't appear to be in any known organization: #{orgNames.join(', ')}.\n
+You may need to invite hubot to the #{teamName} team for it to be queryable."
 
 
   if userName?
