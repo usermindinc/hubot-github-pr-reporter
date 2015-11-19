@@ -50,17 +50,16 @@ organizations = []
 teams = {}
 subscribedRooms = []
 
-#
-# Digest object methods
-#
-GLOBAL_ID_COUNTER = 0
+
 # Default frequency is Mon-Fri at noon
 DEFAULT_SCHEDULE_FREQUENCY = new schedule.RecurrenceRule()
 DEFAULT_SCHEDULE_FREQUENCY.dayOfWeek = new schedule.Range(1,5)
 DEFAULT_SCHEDULE_FREQUENCY.hour = 12
 DEFAULT_SCHEDULE_FREQUENCY.minute = 0
 
-
+#
+# Digest object methods
+#
 class DigestRequest
   constructor: (@user, @team, @organization) ->
     # Easy name properties
