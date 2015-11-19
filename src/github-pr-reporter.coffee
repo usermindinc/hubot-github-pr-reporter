@@ -64,9 +64,9 @@ DEFAULT_SCHEDULE_FREQUENCY.minute = 0
 class DigestRequest
   constructor: (@user, @team, @organization) ->
     # Easy name properties
-    @userName = @user and @user.login
-    @teamName = @team and @team.name
-    @organizationName = @organization and @organization.login
+    @userName = @user?.login
+    @teamName = @team?.name
+    @organizationName = @organization?.login
     # Scheduled properties, defaulting to null
     @room = null
     @requestedBy = null
@@ -178,7 +178,7 @@ digestForRequest = (github, digestRequest, callback) ->
       issues.forEach (issue) ->
         age = ageOfIssue issue
         comments = "#{issue.comments} comments"
-        assignee = issue.assignee and issue.assignee.login or "*unassigned*"
+        assignee = issue.assignee?.login or "*unassigned*"
         title = issue.title
         link = issue.html_url
 
