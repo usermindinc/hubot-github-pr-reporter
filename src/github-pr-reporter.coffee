@@ -385,7 +385,7 @@ module.exports = (robot) ->
         digestForRequest github, digestRequest, (digest) ->
           res.send digest
 
-  robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:(\w*))?(?: team:([\w-]*))?(?: org:(\w*))?(?: cron:"(.*)")?/i, (res) ->
+  robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:(\w*))?(?: team:([\w-]*))?(?: org:(\w*))?(?: cron:[“"”](.*)[“"”])?/i, (res) ->
     [ignored, user, team, org, cron] = res.match
     parseDigestRequest github, user, team, org, (digestRequest, error) ->
       unless error?
