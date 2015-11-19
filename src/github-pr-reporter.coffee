@@ -46,7 +46,7 @@ _          = require 'underscore'
 
 
 # In-memory globals
-organizations = {}
+organizations = []
 teams = {}
 subscribedRooms = []
 
