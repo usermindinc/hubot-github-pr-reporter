@@ -50,23 +50,22 @@ organizations = []
 teams = {}
 subscribedRooms = []
 
-#
-# Digest object methods
-#
-GLOBAL_ID_COUNTER = 0
+
 # Default frequency is Mon-Fri at noon
 DEFAULT_SCHEDULE_FREQUENCY = new schedule.RecurrenceRule()
 DEFAULT_SCHEDULE_FREQUENCY.dayOfWeek = new schedule.Range(1,5)
 DEFAULT_SCHEDULE_FREQUENCY.hour = 12
 DEFAULT_SCHEDULE_FREQUENCY.minute = 0
 
-
+#
+# Digest object methods
+#
 class DigestRequest
   constructor: (@user, @team, @organization) ->
     # Easy name properties
-    @userName = @user and @user.login
-    @teamName = @team and @team.name
-    @organizationName = @organization and @organization.login
+    @userName = @user?.login
+    @teamName = @team?.name
+    @organizationName = @organization?.login
     # Scheduled properties, defaulting to null
     @room = null
     @requestedBy = null
@@ -178,7 +177,7 @@ digestForRequest = (github, digestRequest, callback) ->
       issues.forEach (issue) ->
         age = ageOfIssue issue
         comments = "#{issue.comments} comments"
-        assignee = issue.assignee and issue.assignee.login or "*unassigned*"
+        assignee = issue.assignee?.login or "*unassigned*"
         title = issue.title
         link = issue.html_url
 
