@@ -120,7 +120,7 @@ ageOfIssue = (issue) ->
   else
     duration.humanize()
 
-digestForRequest = (github, digestRequest, callback) ->
+digestForRequest = (robot, github, digestRequest, callback) ->
   # Fetch all issues, either for the single org on the request or for all orgs
   orgNameList = organizations.map (org) -> org.login
   if digestRequest.organizationName?
@@ -173,6 +173,7 @@ digestForRequest = (github, digestRequest, callback) ->
     groupedIssues = _.groupBy sortedIssues, (issue) ->
       issue.user.login
     _.forEach groupedIssues, (issues, login) ->
+
       digest += "#{login}:\n"
       issues.forEach (issue) ->
         age = ageOfIssue issue
@@ -227,7 +228,7 @@ resubscribeRoom = (robot, github, room, res) ->
       if request.room == room
         frequency = request.scheduleFrequency or DEFAULT_SCHEDULE_FREQUENCY
         request.scheduledJob = schedule.scheduleJob frequency, () ->
-          digestForRequest github, request, (digest) ->
+          digestForRequest robot, github, request, (digest) ->
             if res?
               res.send "#{digest}\n\nTo unsubscribe, type `#{robot.name} unsubscribe prs #{request.id}`\n"
       else
@@ -352,7 +353,7 @@ scheduleDigest = (robot, github, res, request, callback) ->
     frequency = request.scheduleFrequency or DEFAULT_SCHEDULE_FREQUENCY
     subscribedRooms.push request.room
     request.scheduledJob = schedule.scheduleJob frequency, () ->
-      digestForRequest github, request, (digest) ->
+      digestForRequest robot, github, request, (digest) ->
         if res?
           res.send "#{digest}\n\nTo unsubscribe, type `#{robot.name} unsubscribe prs #{request.id}`\n"
   catch error
@@ -381,7 +382,7 @@ module.exports = (robot) ->
         res.send "`#{res.match[0]}` failed: #{error}"
       else
         digestRequest.id = getNextId robot
-        digestForRequest github, digestRequest, (digest) ->
+        digestForRequest robot, github, digestRequest, (digest) ->
           res.send digest
 
   robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:([\w\-]+))?(?: team:([\w_\-.]*))?(?: org:([\w\-]))?(?: cron:[“"”](.*)[“"”])?/i, (res) ->
