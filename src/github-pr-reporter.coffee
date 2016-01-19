@@ -310,16 +310,18 @@ You may need to invite hubot to the #{teamName} team for it to be queryable."
 
 
   if userName?
-    # Translate from @roomName to github userName if needed
-    if userName.length > 1 && userName[0] == "@"
-      nameToGithubMap = _.invert(getLatestNameMap(robot))
-      chatName = userName[1...]
-      if nameToGithubMap[chatName]?
-        userName = nameToGithubMap[chatName]
-      else
-        error or= "I don't know who #{userName} is. Ask #{userName} to tell me their github login."
-        userPromise = Promise.resolve null
     userPromise = new Promise (resolve, reject) ->
+
+      # Translate from @roomName to github userName if needed
+      if userName.length > 1 && userName[0] == "@"
+        nameToGithubMap = _.invert(getLatestNameMap(robot))
+        chatName = userName[1...]
+        if nameToGithubMap[chatName]?
+          userName = nameToGithubMap[chatName]
+        else
+          reject "I don't know who #{userName} is. Ask #{userName} to tell me their github login. " +
+            "Type `#{robot.name} who do you know?` to see everyone I know github logins for."
+          return
       userName = userName.toLowerCase()
 
       # if we have a valid team, then ask for all the members of that team.
