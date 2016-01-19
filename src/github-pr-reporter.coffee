@@ -310,6 +310,15 @@ You may need to invite hubot to the #{teamName} team for it to be queryable."
 
 
   if userName?
+    # Translate from @roomName to github userName if needed
+    if userName.length > 1 && userName[0] == "@"
+      nameToGithubMap = _.invert(getLatestNameMap(robot))
+      chatName = userName[1...]
+      if nameToGithubMap[chatName]?
+        userName = nameToGithubMap[chatName]
+      else
+        error or= "I don't know who #{userName} is. Ask #{userName} to tell me their github login."
+        userPromise = Promise.resolve null
     userPromise = new Promise (resolve, reject) ->
       userName = userName.toLowerCase()
 
@@ -391,7 +400,7 @@ module.exports = (robot) ->
   robot.brain.once "loaded", () ->
     getSubscriptions robot
 
-  robot.respond /show prs?(?: for)?(?: user:([\w\-]+))?(?: team:([\w_\-.]+))?(?: org:([\w\-]+))?$/i, (res) ->
+  robot.respond /show prs?(?: for)?(?: user:(@?[\w\-]+))?(?: team:([\w_\-.]+))?(?: org:([\w\-]+))?$/i, (res) ->
     [ignored, user, team, org] = res.match
     parseDigestRequest robot, github, user, team, org, (digestRequest, error) ->
       if error?
@@ -401,7 +410,7 @@ module.exports = (robot) ->
         digestForRequest robot, github, digestRequest, (digest) ->
           res.send digest
 
-  robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:([\w\-]+))?(?: team:([\w_\-.]*))?(?: org:([\w\-]))?(?: cron:[“"”](.*)[“"”])?/i, (res) ->
+  robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:(@?[\w\-]+))?(?: team:([\w_\-.]*))?(?: org:([\w\-]))?(?: cron:[“"”](.*)[“"”])?/i, (res) ->
     [ignored, user, team, org, cron] = res.match
     parseDigestRequest robot, github, user, team, org, (digestRequest, error) ->
       unless error?
