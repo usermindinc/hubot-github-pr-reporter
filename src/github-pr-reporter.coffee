@@ -11,6 +11,7 @@
 #    "moment": "2.10.6"        - Used for report formatting
 #    "node-schedule": "0.5.1"  - Used for the scheduling feature
 #    "underscore": "1.8.3"     - Used for report formatting
+#    "github-credentials"      - Optional. Translates github names to @mention names
 #
 # Commands:
 #   hubot show prs for [user:user] [team:team] [org:organization] - List PRs by author, filter by user, team, or organization. If nothing is specified, it will be for all orgs that hubot can access.

@@ -30,6 +30,7 @@ Then add **hubot-github-pr-reporter** to your `external-scripts.json`:
 * "moment": "2.10.6"        - Used for report formatting
 * "node-schedule": "0.5.1"  - Used for the scheduling feature
 * "underscore": "1.8.3"     - Used for report formatting
+* "github-credentials"      - Optional. Translates github names to @mention names. 
 
 ## Sample Interaction
 
