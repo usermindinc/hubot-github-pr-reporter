@@ -172,8 +172,15 @@ digestForRequest = (robot, github, digestRequest, callback) ->
       moment(issue.updated_at)
     groupedIssues = _.groupBy sortedIssues, (issue) ->
       issue.user.login
+    githubToNameMap = _.reduce(
+      robot.brain.users(),
+      (userMap, user) ->
+        if user.githubLogin
+          userMap[user.githubLogin] = user.name
+        return userMap
+      , {}
+    )
     _.forEach groupedIssues, (issues, login) ->
-
       digest += "#{login}:\n"
       issues.forEach (issue) ->
         age = ageOfIssue issue
