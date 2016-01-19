@@ -125,8 +125,8 @@ getLatestNameMap = (robot) ->
   return _.reduce(
     robot.brain.users(),
     (userMap, user) ->
-      if user.githubLogin
-        userMap[user.githubLogin] = user.name
+      if user.githubLogin?
+        userMap[user.githubLogin.toLowerCase()] = user.name.toLowerCase()
       return userMap
     , {}
   )
@@ -185,8 +185,8 @@ digestForRequest = (robot, github, digestRequest, callback) ->
       issue.user.login
     githubToNameMap = getLatestNameMap(robot)
     familiarName = (githubLogin) ->
-      if githubLogin? and githubToNameMap[githubLogin]
-        return "@#{githubToNameMap[githubLogin]}"
+      if githubLogin? and githubToNameMap[githubLogin.toLowerCase()]
+        return "@#{githubToNameMap[githubLogin.toLowerCase()]}"
       else
         return githubLogin
     _.forEach groupedIssues, (issues, login) ->
@@ -311,6 +311,7 @@ You may need to invite hubot to the #{teamName} team for it to be queryable."
 
   if userName?
     userPromise = new Promise (resolve, reject) ->
+      userName = userName.toLowerCase()
 
       # Translate from @roomName to github userName if needed
       if userName.length > 1 && userName[0] == "@"
@@ -322,7 +323,6 @@ You may need to invite hubot to the #{teamName} team for it to be queryable."
           reject "I don't know who #{userName} is. Ask #{userName} to tell me their github login. " +
             "Type `#{robot.name} who do you know?` to see everyone I know github logins for."
           return
-      userName = userName.toLowerCase()
 
       # if we have a valid team, then ask for all the members of that team.
       # if we have a valid org, then ask for all the members of that org
