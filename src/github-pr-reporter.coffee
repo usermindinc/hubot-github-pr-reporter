@@ -265,7 +265,7 @@ refreshCachedGithubData = (github) ->
 # Main methods. These map almost 1:1 with the registered responders below.
 #
 
-parseDigestRequest = (github, userName, teamName, organizationName, callback) ->
+parseDigestRequest = (robot, github, userName, teamName, organizationName, callback) ->
   # These regexes are really permissive.
   # If they specify 2 things, then it's user, then organization. Validate both.
   # If they specify nothing, then we've got nothing to give.
@@ -393,7 +393,7 @@ module.exports = (robot) ->
 
   robot.respond /show prs?(?: for)?(?: user:([\w\-]+))?(?: team:([\w_\-.]+))?(?: org:([\w\-]+))?$/i, (res) ->
     [ignored, user, team, org] = res.match
-    parseDigestRequest github, user, team, org, (digestRequest, error) ->
+    parseDigestRequest robot, github, user, team, org, (digestRequest, error) ->
       if error?
         res.send "`#{res.match[0]}` failed: #{error}"
       else
@@ -403,7 +403,7 @@ module.exports = (robot) ->
 
   robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:([\w\-]+))?(?: team:([\w_\-.]*))?(?: org:([\w\-]))?(?: cron:[“"”](.*)[“"”])?/i, (res) ->
     [ignored, user, team, org, cron] = res.match
-    parseDigestRequest github, user, team, org, (digestRequest, error) ->
+    parseDigestRequest robot, github, user, team, org, (digestRequest, error) ->
       unless error?
         if cron?
           try
