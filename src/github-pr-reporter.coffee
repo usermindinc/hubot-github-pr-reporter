@@ -180,12 +180,17 @@ digestForRequest = (robot, github, digestRequest, callback) ->
         return userMap
       , {}
     )
+    familiarName = (githubLogin) ->
+      if githubLogin? and githubToNameMap[githubLogin]
+        return "@#{githubToNameMap[githubLogin]}"
+      else
+        return githubLogin
     _.forEach groupedIssues, (issues, login) ->
-      digest += "#{login}:\n"
+      digest += "#{familiarName(login)}:\n"
       issues.forEach (issue) ->
         age = ageOfIssue issue
         comments = "#{issue.comments} comments"
-        assignee = issue.assignee?.login or "*unassigned*"
+        assignee = familiarName(issue.assignee?.login) or "*unassigned*"
         title = issue.title
         link = issue.html_url
 
