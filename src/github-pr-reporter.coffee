@@ -121,6 +121,16 @@ ageOfIssue = (issue) ->
   else
     duration.humanize()
 
+getLatestNameMap = (robot) ->
+  return _.reduce(
+    robot.brain.users(),
+    (userMap, user) ->
+      if user.githubLogin
+        userMap[user.githubLogin] = user.name
+      return userMap
+    , {}
+  )
+
 digestForRequest = (robot, github, digestRequest, callback) ->
   # Fetch all issues, either for the single org on the request or for all orgs
   orgNameList = organizations.map (org) -> org.login
@@ -173,14 +183,7 @@ digestForRequest = (robot, github, digestRequest, callback) ->
       moment(issue.updated_at)
     groupedIssues = _.groupBy sortedIssues, (issue) ->
       issue.user.login
-    githubToNameMap = _.reduce(
-      robot.brain.users(),
-      (userMap, user) ->
-        if user.githubLogin
-          userMap[user.githubLogin] = user.name
-        return userMap
-      , {}
-    )
+    githubToNameMap = getLatestNameMap(robot)
     familiarName = (githubLogin) ->
       if githubLogin? and githubToNameMap[githubLogin]
         return "@#{githubToNameMap[githubLogin]}"
