@@ -11,6 +11,7 @@
 #    "moment": "2.10.6"        - Used for report formatting
 #    "node-schedule": "0.5.1"  - Used for the scheduling feature
 #    "underscore": "1.8.3"     - Used for report formatting
+#    "github-credentials"      - Optional. Translates github names to @mention names
 #
 # Commands:
 #   hubot show prs for [user:user] [team:team] [org:organization] - List PRs by author, filter by user, team, or organization. If nothing is specified, it will be for all orgs that hubot can access.
@@ -120,7 +121,17 @@ ageOfIssue = (issue) ->
   else
     duration.humanize()
 
-digestForRequest = (github, digestRequest, callback) ->
+getLatestNameMap = (robot) ->
+  return _.reduce(
+    robot.brain.users(),
+    (userMap, user) ->
+      if user.githubLogin?
+        userMap[user.githubLogin.toLowerCase()] = user.name.toLowerCase()
+      return userMap
+    , {}
+  )
+
+digestForRequest = (robot, github, digestRequest, callback) ->
   # Fetch all issues, either for the single org on the request or for all orgs
   orgNameList = organizations.map (org) -> org.login
   if digestRequest.organizationName?
@@ -172,12 +183,18 @@ digestForRequest = (github, digestRequest, callback) ->
       moment(issue.updated_at)
     groupedIssues = _.groupBy sortedIssues, (issue) ->
       issue.user.login
+    githubToNameMap = getLatestNameMap(robot)
+    familiarName = (githubLogin) ->
+      if githubLogin? and githubToNameMap[githubLogin.toLowerCase()]
+        return "@#{githubToNameMap[githubLogin.toLowerCase()]}"
+      else
+        return githubLogin
     _.forEach groupedIssues, (issues, login) ->
-      digest += "#{login}:\n"
+      digest += "#{familiarName(login)}:\n"
       issues.forEach (issue) ->
         age = ageOfIssue issue
         comments = "#{issue.comments} comments"
-        assignee = issue.assignee?.login or "*unassigned*"
+        assignee = familiarName(issue.assignee?.login) or "*unassigned*"
         title = issue.title
         link = issue.html_url
 
@@ -227,7 +244,7 @@ resubscribeRoom = (robot, github, room, res) ->
       if request.room == room
         frequency = request.scheduleFrequency or DEFAULT_SCHEDULE_FREQUENCY
         request.scheduledJob = schedule.scheduleJob frequency, () ->
-          digestForRequest github, request, (digest) ->
+          digestForRequest robot, github, request, (digest) ->
             if res?
               res.send "#{digest}\n\nTo unsubscribe, type `#{robot.name} unsubscribe prs #{request.id}`\n"
       else
@@ -248,7 +265,7 @@ refreshCachedGithubData = (github) ->
 # Main methods. These map almost 1:1 with the registered responders below.
 #
 
-parseDigestRequest = (github, userName, teamName, organizationName, callback) ->
+parseDigestRequest = (robot, github, userName, teamName, organizationName, callback) ->
   # These regexes are really permissive.
   # If they specify 2 things, then it's user, then organization. Validate both.
   # If they specify nothing, then we've got nothing to give.
@@ -295,6 +312,17 @@ You may need to invite hubot to the #{teamName} team for it to be queryable."
   if userName?
     userPromise = new Promise (resolve, reject) ->
       userName = userName.toLowerCase()
+
+      # Translate from @roomName to github userName if needed
+      if userName.length > 1 && userName[0] == "@"
+        nameToGithubMap = _.invert(getLatestNameMap(robot))
+        chatName = userName[1...]
+        if nameToGithubMap[chatName]?
+          userName = nameToGithubMap[chatName]
+        else
+          reject "I don't know who #{userName} is. Ask #{userName} to tell me their github login. " +
+            "Type `#{robot.name} who do you know?` to see everyone I know github logins for."
+          return
 
       # if we have a valid team, then ask for all the members of that team.
       # if we have a valid org, then ask for all the members of that org
@@ -352,7 +380,7 @@ scheduleDigest = (robot, github, res, request, callback) ->
     frequency = request.scheduleFrequency or DEFAULT_SCHEDULE_FREQUENCY
     subscribedRooms.push request.room
     request.scheduledJob = schedule.scheduleJob frequency, () ->
-      digestForRequest github, request, (digest) ->
+      digestForRequest robot, github, request, (digest) ->
         if res?
           res.send "#{digest}\n\nTo unsubscribe, type `#{robot.name} unsubscribe prs #{request.id}`\n"
   catch error
@@ -374,19 +402,19 @@ module.exports = (robot) ->
   robot.brain.once "loaded", () ->
     getSubscriptions robot
 
-  robot.respond /show prs?(?: for)?(?: user:([\w\-]+))?(?: team:([\w_\-.]+))?(?: org:([\w\-]+))?$/i, (res) ->
+  robot.respond /show prs?(?: for)?(?: user:(@?[\w\-]+))?(?: team:([\w_\-.]+))?(?: org:([\w\-]+))?$/i, (res) ->
     [ignored, user, team, org] = res.match
-    parseDigestRequest github, user, team, org, (digestRequest, error) ->
+    parseDigestRequest robot, github, user, team, org, (digestRequest, error) ->
       if error?
         res.send "`#{res.match[0]}` failed: #{error}"
       else
         digestRequest.id = getNextId robot
-        digestForRequest github, digestRequest, (digest) ->
+        digestForRequest robot, github, digestRequest, (digest) ->
           res.send digest
 
-  robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:([\w\-]+))?(?: team:([\w_\-.]*))?(?: org:([\w\-]))?(?: cron:[“"”](.*)[“"”])?/i, (res) ->
+  robot.respond /sub(?:scribe)? prs?(?: for)?(?: user:(@?[\w\-]+))?(?: team:([\w_\-.]*))?(?: org:([\w\-]))?(?: cron:[“"”](.*)[“"”])?/i, (res) ->
     [ignored, user, team, org, cron] = res.match
-    parseDigestRequest github, user, team, org, (digestRequest, error) ->
+    parseDigestRequest robot, github, user, team, org, (digestRequest, error) ->
       unless error?
         if cron?
           try
