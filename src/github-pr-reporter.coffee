@@ -43,6 +43,7 @@
 cronParser = require 'cron-parser'
 moment     = require 'moment'
 schedule   = require 'node-schedule'
+Promise    = require 'promise'
 _          = require 'underscore'
 
 
