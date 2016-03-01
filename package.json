@@ -7,10 +7,10 @@
   "keywords": "hubot, hubot-scripts, github, cron, schedule, pull, request, pr",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hubot-scripts/hubot-github-pr-reporter.git"
+    "url": "git://github.com/usermindinc/hubot-github-pr-reporter.git"
   },
   "bugs": {
-    "url": "https://github.com/hubot-scripts/hubot-github-pr-reporter/issues"
+    "url": "https://github.com/usermindinc/hubot-github-pr-reporter/issues"
   },
   "dependencies": {
     "cron-parser": "^1.0.1",
