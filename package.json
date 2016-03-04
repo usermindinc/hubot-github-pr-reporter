@@ -40,5 +40,8 @@
   "main": "index.coffee",
   "scripts": {
     "test": "grunt test"
+  },
+  "engines": {
+    "node": ">=5.0.0"
   }
 }
