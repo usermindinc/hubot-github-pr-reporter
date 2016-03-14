@@ -51,8 +51,8 @@ mr_house:
 You can specify:
 * No options. Just `hubot show prs` to get the fire hose.
 * A user to show PRs by that author, by adding a `user:githubLogin` string. If you're using github-credentials, you can also specify the user by the chat room name (like `user:@chatName`), and hubot will automatically translate it to their github name.
-* A team to show PRs authored by that team, by adding a `team:teamName` string
-* An organization to show all open PRs in that org, by adding a `org:organizationName` string
+* A team to show PRs authored by that team, by adding a `team:teamName` string. You can go to https://github.com/orgs/{{ORGANIZATION_NAME}}/teams to see a list of available team names for a given organization.
+* An organization to show all open PRs in that org, by adding a `org:organizationName` string. To see a list of available organizations, go to the profile of HUBOT_GITHUB_USER and look at the Organizations section on the left hand side.
 
 Note that the order matters, and they chain when possible. For instance:
 * Specifying user and org limit the responses to just that user in that org. Useful if a user has open PRs in multiple orgs, but you only care about one.
