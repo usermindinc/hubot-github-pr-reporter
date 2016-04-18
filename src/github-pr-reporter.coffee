@@ -476,6 +476,11 @@ module.exports = (robot) ->
     else
       res.send "#{res.match[1]} is an invalid subscription id. Try `#{robot.name} list pr subscriptions` to see subscriptions in this room"
 
+  robot.respond /show org(?:anization)?s/g, (res) ->
+      orgs = organizations.map (org) ->
+        org.login
+      res.send "I know about the following orgs: #{orgs.join(', ')}"
+
   #
   # This is interesting. We can't store & load the response object. We need to see it again.
   # So, this little bit listens for whatever rooms it can hear and tries to resubscribe them.
