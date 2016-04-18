@@ -80,6 +80,7 @@ class DigestRequest
     request.id = object.id
     request.room = object.room
     request.requestedBy = object.requestedBy
+    request.scheduleFrequency = object.scheduleFrequency
     request
 
   description: (shouldSkipFrequency) ->
@@ -384,6 +385,7 @@ scheduleDigest = (robot, github, res, request, callback) ->
       digestForRequest robot, github, request, (digest) ->
         if res?
           res.send "#{digest}\n\nTo unsubscribe, type `#{robot.name} unsubscribe prs #{request.id}`\n"
+    robot.brain.save()
   catch error
     errorMessage = "Error scheduling request #{request.id}: #{error}"
 
