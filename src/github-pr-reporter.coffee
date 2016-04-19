@@ -470,6 +470,7 @@ module.exports = (robot) ->
         if matchingRequest.room == res.envelope.room
           matchingRequest.scheduledJob.cancel()
           subscriptions.splice(matchingIndex, 1)
+          robot.brain.save()
           res.send "Successfully unsubscribed from #{matchingRequest.id}: #{matchingRequest.description()}"
         else
           res.send "Subscription #{matchingRequest.id} is for room ##{matchingRequest.room}. You need to be in that room to unsubscribe to that report."
