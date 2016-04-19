@@ -479,6 +479,30 @@ module.exports = (robot) ->
     else
       res.send "#{res.match[1]} is an invalid subscription id. Try `#{robot.name} list pr subscriptions` to see subscriptions in this room"
 
+  robot.respond /show org(?:anization)?s/i, (res) ->
+    orgs = organizations.map (org) ->
+      org.login
+    res.send "I know about the following orgs: #{orgs.join(', ')}"
+
+  robot.respond /show teams/i, (res) ->
+    teamsList = organizations.map (org) ->
+      teamNames = teams[org.login].map (team) ->
+        team.name.trim()
+      "Teams in *#{org.login}*: #{teamNames.join(', ')}"
+    res.send teamsList.join('\n')
+
+  robot.respond /show users( by team)?/i, (res) ->
+    shouldShowByTeam = res.match[1]?
+    if shouldShowByTeam
+      organizations.forEach (org) ->
+        teamIds = teams[org.login]
+        teams[org.login].forEach (team) ->
+          github.get "teams/#{team.id}/members", (members) ->
+            res.send "Users in team *#{team.name}*: #{members.map((member) -> member.login).join(', ')}"
+    else
+      organizations.forEach (org) ->
+        github.get "orgs/#{org.login}/members", (members) ->
+          res.send "Users in org *#{org.login}*: #{members.map((member) -> member.login).join(', ')}"
   #
   # This is interesting. We can't store & load the response object. We need to see it again.
   # So, this little bit listens for whatever rooms it can hear and tries to resubscribe them.
