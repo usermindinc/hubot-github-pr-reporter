@@ -477,9 +477,9 @@ module.exports = (robot) ->
       res.send "#{res.match[1]} is an invalid subscription id. Try `#{robot.name} list pr subscriptions` to see subscriptions in this room"
 
   robot.respond /show org(?:anization)?s/i, (res) ->
-      orgs = organizations.map (org) ->
-        org.login
-      res.send "I know about the following orgs: #{orgs.join(', ')}"
+    orgs = organizations.map (org) ->
+      org.login
+    res.send "I know about the following orgs: #{orgs.join(', ')}"
 
   robot.respond /show teams/i, (res) ->
     teamsList = organizations.map (org) ->
