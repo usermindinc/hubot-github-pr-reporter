@@ -80,6 +80,7 @@ class DigestRequest
     request.id = object.id
     request.room = object.room
     request.requestedBy = object.requestedBy
+    request.scheduleFrequency = object.scheduleFrequency
     request
 
   description: (shouldSkipFrequency) ->
@@ -384,6 +385,7 @@ scheduleDigest = (robot, github, res, request, callback) ->
       digestForRequest robot, github, request, (digest) ->
         if res?
           res.send "#{digest}\n\nTo unsubscribe, type `#{robot.name} unsubscribe prs #{request.id}`\n"
+    robot.brain.save()
   catch error
     errorMessage = "Error scheduling request #{request.id}: #{error}"
 
@@ -468,6 +470,7 @@ module.exports = (robot) ->
         if matchingRequest.room == res.envelope.room
           matchingRequest.scheduledJob.cancel()
           subscriptions.splice(matchingIndex, 1)
+          robot.brain.save()
           res.send "Successfully unsubscribed from #{matchingRequest.id}: #{matchingRequest.description()}"
         else
           res.send "Subscription #{matchingRequest.id} is for room ##{matchingRequest.room}. You need to be in that room to unsubscribe to that report."
